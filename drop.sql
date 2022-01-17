@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS emprunt, occupation_p, utilisation, horaire, chaussures,  reservation , dateJ, piste, adherent;
