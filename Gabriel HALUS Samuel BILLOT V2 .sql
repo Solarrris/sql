@@ -13,10 +13,6 @@ CREATE TABLE piste (
     numPiste integer primary key
 );
 
-CREATE TABLE dateJ (
-    dateJour date primary key CHECK (DAYOFWEEK(dateJour) NOT IN ('Sunday'))
-);
-
 CREATE TABLE reservation (
     numResa integer primary key,
     nbParties integer check (nbParties between 1 and 3),
@@ -24,7 +20,7 @@ CREATE TABLE reservation (
     nbMineurs integer,
     hDebJeu time(0),
     participe boolean,  
-    dateJour date references dateJ(dateJour),
+    dateJour date,
     numPiste integer references piste(numPiste),
     codeAdh varchar references adherent(codeAdh)
 );
@@ -35,23 +31,19 @@ CREATE TABLE chaussures (
     etat varchar CHECK(etat IN('OK', 'KO'))
 );
 
-CREATE TABLE horaire (
-    heure time(0) primary key CHECK (heure between '9:30:00' and '20:30:00')
-);
-
 CREATE TABLE utilisation (
     numPaire integer references chaussures(numPaire),
-    dateJour date references dateJ(dateJour),
-    debutU time(0) references horaire(heure),
-    finU time(0) references horaire(heure) CHECK (finU > debutU),
+    dateJour date,
+    debutU time(0),
+    finU time(0) CHECK (finU > debutU),
     primary key (debutU, finU, dateJour, numPaire)
 );
 
 CREATE TABLE occupation_p (
     numPiste integer references piste(numPiste),
-    dateJour date references dateJ(dateJour),
-    debut time(0) references horaire(heure),
-    fin time(0) references horaire(heure) CHECK (fin > debut),
+    dateJour date,
+    debut time(0),
+    fin time(0) CHECK ('09:15:00' < debut AND debut < fin AND fin < '20:30:00'),
     primary key (numPiste, debut, fin, dateJour)
 );
 
