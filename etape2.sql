@@ -16,7 +16,7 @@ SET DATESTYLE TO EUROPEAN;
 
 INSERT INTO ADHERENT VALUES ('123', 'Halus', 'Gabriel', '2003/02/27', '15 boulevard des saltimbanques', '0786541278', 'gabrielhalus@michel.com', 'michel');
 
-INSERT INTO ADHERENT VALUES ('123a8d', 'Billot', 'Samuel', '2003/10/25', '18 rue des goulots', '0778985621', 'samuelbillot@francis.com', 'ilovefrancis56');
+INSERT INTO ADHERENT VALUES ('456', 'Billot', 'Samuel', '2003/10/25', '18 rue des goulots', '0778985621', 'samuelbillot@francis.com', 'ilovefrancis56');
 
 INSERT INTO ADHERENT VALUES ('a78fd', 'Fruchart', 'Mélian', '2003/03/30', '12 avenue des tulipes', '0648971264', 'melianfruchoux@rene.fr', 'renéenforceouais');
 
@@ -95,12 +95,14 @@ INSERT INTO CHAUSSURES VALUES (30, 46, 'OK');
 -- numéro 1, début à 9h15, 2 parties, 2 personnes, pas de mineur, piste n°1
 -- l'adhérent qui fait la réservation ne fera pas partie des joueurs
 
-INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 123);
+INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, '123');
 
 
 -- Retenue d'une paire de chaussures, pointure 42 et une paire de chaussures
 -- pointure 43, pour la réservation n°1
 
+INSERT INTO EMPRUNT VALUES (1, (SELECT numPaire FROM CHAUSSURES WHERE pointure = 42 LIMIT 1));
+INSERT INTO EMPRUNT VALUES (1, (SELECT numPaire FROM CHAUSSURES WHERE pointure = 43 LIMIT 1));
 
 ----------------------------------------------------
 -- A2 - Gérer les conséquences de l'enregistrement
@@ -109,6 +111,8 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 ----------------------------------------------------
 
 -- 2.1 calcul de l'heure de fin de jeu pour la réservation n°1:
+
+SELECT (hDebJeu+(10*nbJoueurs*nbParties) FROM RESERVATION WHERE numResa = 1);
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -123,7 +127,14 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 -- à partir de l'heure de début de jeu de la réservation n°1 et jusqu'à l'heure
 -- estimée de fin de jeu pour cette réservation
 
+INSERT INTO OCCUPATION_P VALUES ((SELECT numPiste FROM RESERVATION WHERE numResa = 1),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 1),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 1),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 1);
+
 -- vérification (SELECT....)
+
+SELECT * FROM OCCUPATION_P;
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -134,11 +145,18 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 
 --2.3. Dans la relation représentant l'utilisation des paires de chaussures
 -- prêtées par le club :
--- Écrire l'instruction permettant de mémoriser la retenue de paires
+-- Écrire l'instruction permettant de mémoriser la retenuTe de paires
 -- de chaussures pour la réservation n°1
+
+INSERT INTO UTILISATION VALUES ((SELECT numPaire FROM EMPRUNT WHERE numResa = 1 LIMIT 1),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 1),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 1),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 1);
 
 
 -- vérification (SELECT...)
+
+SELECT * FROM UTILISATION;
 
 /* Résultat du SELECT (à coller ci-dessous)
 
@@ -153,33 +171,72 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 -- affectation de la piste n°1,
 -- l'adhérent qui fait la réservation fera partie des joueurs
 
+INSERT INTO RESERVATION VALUES (2, 1, 3, 1, '11:30:00', true, '2022/01/21', 1, '1xc2bb');
+
 
 -- réservation n°3, début à 16h, 3 parties, 4 personnes dont 3 mineurs,
 -- affectation de la piste n°1,
 -- l'adhérent qui fait la réservation fera partie des joueurs
 
+INSERT INTO RESERVATION VALUES (3, 3, 4, 3, '16:00:00', true, '2022/01/21', 1, '456');
+
 
 -- retenue d'une paire de chaussures, pointure 36 pour la réservation n°2
 
+INSERT INTO EMPRUNT VALUES (2, (SELECT numPaire FROM CHAUSSURES WHERE pointure = 36 LIMIT 1));
+
 
 -- retenue d'une paire de chaussures, pointure 32 pour la réservation n°3
+
+INSERT INTO EMPRUNT VALUES (3, (SELECT numPaire FROM CHAUSSURES WHERE pointure = 32 LIMIT 1));
 
 
 -- 3.2 gestion des conséquences de la prise en compte des demandes
 
 -- a) Occupation des pistes
 
+INSERT INTO OCCUPATION_P VALUES ((SELECT numPiste FROM RESERVATION WHERE numResa = 2),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 2),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 2),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 2);
+
+
+
+
+INSERT INTO OCCUPATION_P VALUES ((SELECT numPiste FROM RESERVATION WHERE numResa = 3),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 3),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 3),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 3);
 
 -- vérification
 
+SELECT * FROM OCCUPATION_P
+
 
 /* Résultat du SELECT (à coller ci-dessous)
+
+
 
 */
 
 -- b) utilisation des chaussures
 
+INSERT INTO UTILISATION VALUES ((SELECT numPaire FROM EMPRUNT WHERE numResa = 2 LIMIT 1),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 2),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 2),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 2);
+
+
+
+INSERT INTO UTILISATION VALUES ((SELECT numPaire FROM EMPRUNT WHERE numResa = 3 LIMIT 1),
+                                (SELECT dateJour FROM RESERVATION WHERE numResa = 3),
+                                (SELECT hDebJeu FROM RESERVATION WHERE numResa = 3),
+                                (SELECT (hDebJeu+(10*nbParties*nbJoueurs)) FROM RESERVATION WHERE numResa = 3);
+
+
 -- vérification
+
+SELECT * FROM UTILISATION;
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -194,6 +251,8 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 --------------------------------------------------
 
 -- B1.1 Nombre total de mineurs pour les réservations du 21 janvier 2022
+
+SELECT COUNT(nbMineurs) FROM RESERVATION WHERE dateJour LIKE '2022/01/21';
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -212,6 +271,10 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 -- B1.3 Numéro et pointure des paires de chaussures réservées
 -- pour chaque réservation du 21 janvier 2022
 
+SELECT numResa, numPaire, pointure FROM EMPRUNT, CHAUSSURES
+WHERE EMPRUNT.numPaire = CHAUSSURES.numPaire
+GROUP BY numResa;
+
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -222,6 +285,7 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 
 -- B1.4 Pour chaque pointure, nombre de paires de chaussures dans la base
 
+SELECT pointure, COUNT(numPaire) FROM CHAUSSURES GROUP BY pointure;
 
 
 /* Résultat du SELECT (à coller ci-dessous)
@@ -233,6 +297,8 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 
 -- B1.5 Pour chaque pointure, nombre de paires de chaussures en mauvais état
 
+SELECT pointure, COUNT(numPaire) FROM CHAUSSURES WHERE etat LIKE 'KO' GROUP BY pointure;
+
 
 /* Résultat du SELECT (à coller ci-dessous)
 
@@ -242,7 +308,7 @@ INSERT INTO RESERVATION VALUES (1, 2, 2, 0, '9:15:00', false, '2022/01/21', 1, 1
 
 --B1.6 Planning d'occupation de la piste 1, le 21 janvier 2022
 
-
+SELECT (debut, fin) FROM OCCUPATION_P WHERE numPiste = 1 AND dateJour LIKE '2022/01/21'
 
 /* Résultat du SELECT (à coller ci-dessous)
 
